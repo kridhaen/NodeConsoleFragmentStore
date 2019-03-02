@@ -17,6 +17,7 @@ class FragmentStore{
         this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
     }
     download(_url){
+	console.log("downloading: "+_url);
         return new Promise(resolve => {
             fetch(_url)
                 .then(function(response) {
@@ -47,33 +48,40 @@ class FragmentStore{
     }
 
     async compareAndSave(latest){
+	console.log("comparing");
         if(this.lastLatest){
             if(latest !== this.lastLatest){
                 //save to disk
-                let currentTimeMillis = Date.now();
-                fs.writeFile("./fragments/fragment"+currentTimeMillis, latest, function(err) {
+		console.log("difference latest");
+                this.lastLatest = latest;
+		let currentTimeMillis = Date.now();
+                fs.writeFile("./latest/fragment_"+currentTimeMillis, latest, function(err) {
                     if(err){
                         console.log(err);
                     }
+		    console.log("latest saved");
                 });
 
-                let store = this.parseAndStoreQuads(latest);
-                let prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
-                let newLastPreviousUrl = prev;
-                while (prev && this.lastPreviousUrl !== prev.object.value) {
+                let store = await this.parseAndStoreQuads(latest);
+                
+		let prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
+                let oldLastPreviousUrl = this.lastPreviousUrl;
+		this.lastPreviousUrl = prev;
+                while (prev && this.oldLastPreviousUrl !== prev.object.value) {
                     let doc = await this.download(prev.object.value);
+ 		    console.log("downloaded previous");
                     store = await this.parseAndStoreQuads(doc);
-
-                    fs.writeFile("./previous/"+encodeURI(prev.object.value), doc, function(err) {
+		    
+		    let name = /time=(.*)/.exec(prev.object.value);
+                    fs.writeFile("./previous/"+name, doc, function(err) {
                         if(err){
                             console.log(err);
                         }
+			console.log("previous saved");
                     });
 
                     prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
                 }
-                this.lastPreviousUrl = newLastPreviousUrl;
-                this.lastLatest = latest;
             }
         }
         else {
@@ -84,10 +92,10 @@ class FragmentStore{
     async start(){
         console.log("running");
         while(true){
-            this.download(this.DATASET_URL)
-                .then(console.log("fragment"))
-                .then(res => console.log(res))
-                .then(await this.sleep(10000));
+            let res = await this.download(this.DATASET_URL)
+			.then(console.log("downloaded latest fragment"));
+            this.compareAndSave(res);
+            await this.sleep(10000);
             // console.log("fragment");
             // console.log(doc);
             // this.sleep(10000);
