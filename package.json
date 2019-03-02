@@ -1,0 +1,26 @@
+{
+  "name": "consolefragmentstore",
+  "version": "0.0.1",
+  "description": "Storage of traffic light fragments to local file system",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kridhaen/consolefragmentstore.git"
+  },
+  "author": "kridhaen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kridhaen/consolefragmentstore/issues"
+  },
+  "homepage": "https://github.com/kridhaen/consolefragmentstore#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "n3": "^1.0.4",
+    "node-fetch": "^2.3.0",
+    "ssl-root-cas": "^1.3.1"
+  }
+}
