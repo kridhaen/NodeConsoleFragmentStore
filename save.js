@@ -95,6 +95,7 @@ class FragmentStore{
 
     async start(){
         console.log("running");
+        while(true){
             let res = await this.download(this.DATASET_URL)
 			.then(console.log("downloaded latest fragment"));
             this.compareAndSave(res);
