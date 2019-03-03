@@ -47,37 +47,38 @@ class FragmentStore{
         return new Promise(resolve => setTimeout(resolve, milliseconds))
     }
 
+    //latest -> green, prev: blue
     async compareAndSave(latest){
 	console.log("comparing");
         if(this.lastLatest){
             if(latest !== this.lastLatest){
-                //save to disk
-		console.log("difference latest");
+                //save latest to disk
+		        console.log("difference latest", "color: green");
                 this.lastLatest = latest;
-		let currentTimeMillis = Date.now();
+		        let currentTimeMillis = Date.now();
                 fs.writeFile("./latest/fragment_"+currentTimeMillis, latest, function(err) {
                     if(err){
                         console.log(err);
                     }
-		    console.log("latest saved");
+		            console.log("latest saved", "color: green");
                 });
 
                 let store = await this.parseAndStoreQuads(latest);
                 
-		let prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
+		        let prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
                 let oldLastPreviousUrl = this.lastPreviousUrl;
-		this.lastPreviousUrl = prev;
+		        this.lastPreviousUrl = prev;
                 while (prev && this.oldLastPreviousUrl !== prev.object.value) {
                     let doc = await this.download(prev.object.value);
- 		    console.log("downloaded previous");
+ 		            console.log("downloaded previous", "color: blue");
                     store = await this.parseAndStoreQuads(doc);
 		    
-		    let name = /time=(.*)/.exec(prev.object.value);
+		        let name = /time=(.*)/.exec(prev.object.value);
                     fs.writeFile("./previous/"+name, doc, function(err) {
                         if(err){
                             console.log(err);
                         }
-			console.log("previous saved");
+			    console.log("previous saved", "color: blue");
                     });
 
                     prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
@@ -93,7 +94,7 @@ class FragmentStore{
         console.log("running");
         while(true){
             let res = await this.download(this.DATASET_URL)
-			.then(console.log("downloaded latest fragment"));
+			    .then(console.log("downloaded latest fragment", "color: green"));
             this.compareAndSave(res);
             await this.sleep(10000);
             // console.log("fragment");
