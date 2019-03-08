@@ -1,5 +1,6 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
+const axios = require('axios');
 const n3 = require('n3');
 const https = require("https");
 
@@ -19,24 +20,30 @@ class FragmentStore{
         this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
     }
 
-    download(_url){
+    download2(_url){
 	    console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
 	    const caAgent = new https.Agent({ca: rootca});
-        return new Promise(resolve => {
+        return new Promise((resolve,reject) => {
 
-            fetch(_url, {agent: caAgent})
+            fetch(_url)
                 .then(function(response) {
-                    return response.text();
+                    resolve(response.text());
                 })
-                .then(function(text) {
-                    resolve(text);
-                })
-                .catch(err => console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"));
+                .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
         });
     }
 
-    download2(_url){
+    download(_url){
+        console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
+        //const caAgent = new https.Agent({ca: rootca});
+        return new Promise((resolve,reject) => {
 
+            axios.get(_url)
+                .then(function(response) {
+                    resolve(response.data);
+                })
+                .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
+        });
     }
 
     parseAndStoreQuads(_doc) {
@@ -89,7 +96,7 @@ class FragmentStore{
                         if(err){
                             console.log(err);
                         }
-			    console.log("\x1b[33m","previous saved","\x1b[0m");
+			        console.log("\x1b[33m","previous saved","\x1b[0m");
                     });
 
                     prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
@@ -101,25 +108,26 @@ class FragmentStore{
         }
     }
 
-    async start(){
+    start(){
         console.log("running");
         setInterval(() => {
-            try{
+            //try{
                 this.download(this.DATASET_URL)
-                    .then(console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"))
-                    .then((res) => this.compareAndSave(res));
+                    .then(() => console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"))
+                    .then((res) => this.compareAndSave(res))
+                    .catch(e => console.log(e));
                 //this.compareAndSave(res);
                 // console.log("fragment");
                 // console.log(doc);
                 // this.sleep(10000);
-            }
-            catch(e){
-                console.log(e);
-            }
+           // }
+            //catch(e){
+           //     console.log(e);
+           // }
         }, 10000);
     }
 
 }
 
 let fragmentStore = new FragmentStore();
-fragmentStore.start().catch((err) => console.log(err));
+fragmentStore.start();
