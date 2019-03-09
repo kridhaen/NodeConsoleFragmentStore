@@ -16,16 +16,16 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 class FragmentStore{
     constructor(){
         this.lastPreviousUrl = null;
-        this.lastLatest = null;
+        this.lastLatest = "0";
         this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
     }
 
-    download2(_url){
+    download(_url){
 	    console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
 	    const caAgent = new https.Agent({ca: rootca});
         return new Promise((resolve,reject) => {
 
-            fetch(_url)
+            fetch(_url, { timeout: 10000 })
                 .then(function(response) {
                     resolve(response.text());
                 })
@@ -33,7 +33,7 @@ class FragmentStore{
         });
     }
 
-    download(_url){
+    download2(_url){
         console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
         //const caAgent = new https.Agent({ca: rootca});
         return new Promise((resolve,reject) => {
@@ -65,9 +65,10 @@ class FragmentStore{
 
     //latest -> green, prev: blue
     async compareAndSave(latest){
-	console.log("comparing");
+    console.log("comparing");
+    //console.log(latest);
         if(this.lastLatest){
-            if(latest !== this.lastLatest){
+            if(latest.length != this.lastLatest.length){
                 //save latest to disk
                 this.lastLatest = latest;
 		        console.log("\x1b[36m","difference latest","\x1b[0m");
@@ -91,12 +92,13 @@ class FragmentStore{
  		            console.log("\x1b[33m","downloaded previous","\x1b[0m");
                     store = await this.parseAndStoreQuads(doc);
 		    
-		        let name = /time=(.*)/.exec(prev.object.value);
-                    fs.writeFile("./previous/"+name, doc, function(err) {
+                    let name = /time=(.*)/.exec(prev.object.value)[1].replace(/\:/g,"_").replace(/\./g,"_") + ".trig";
+                    //console.log("\x1b[31m",name,"\x1b[0m");
+                    fs.writeFile("./previous/fragment_"+name, doc, function(err) {
                         if(err){
                             console.log(err);
                         }
-			        console.log("\x1b[33m","previous saved","\x1b[0m");
+			        console.log("\x1b[33m","previous saved: "+name,"\x1b[0m");
                     });
 
                     prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
@@ -110,10 +112,10 @@ class FragmentStore{
 
     start(){
         console.log("running");
-        setInterval(() => {
+        //setInterval(() => { //no interval when only downloading 1 latest and the previous fragments
             //try{
                 this.download(this.DATASET_URL)
-                    .then(() => console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"))
+                    .then((res) => { console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"); return res})
                     .then((res) => this.compareAndSave(res))
                     .catch(e => console.log(e));
                 //this.compareAndSave(res);
@@ -124,6 +126,12 @@ class FragmentStore{
             //catch(e){
            //     console.log(e);
            // }
+           console.log("\x1b[35m","ready for next latest","\x1b[0m");
+        //}, 3000);
+
+        //prevent termination of program when not using interval
+        setInterval(() => {
+            console.log("...............running...............");
         }, 10000);
     }
 
