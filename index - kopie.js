@@ -87,7 +87,6 @@ class FragmentStore{
                 if(prev){
                     this.lastPreviousUrl = prev.object.value;
                 }
-                let count = 1;
 		        while (prev && oldLastPreviousUrl !== prev.object.value) {
                     try {
                         let doc = await this.download(prev.object.value);
@@ -101,9 +100,9 @@ class FragmentStore{
                             if(err){
                                 console.log(err);
                             }
-                        console.log("\x1b[33m","previous "+count+" saved: "+name,"\x1b[0m");
+                        console.log("\x1b[33m","previous saved: "+name,"\x1b[0m");
                         });
-                        count++;
+    
                         prev = store.getQuads(null, namedNode('http://www.w3.org/ns/hydra/core#previous'), null)[0];
                     } catch(e){
                         console.log("\x1b[31m",e,"\x1b[0m");
@@ -121,7 +120,7 @@ class FragmentStore{
 
     start(){
         console.log("running");
-        setInterval(() => { //changed interval to every 3 hours get all previous files
+        //setInterval(() => { //no interval when only downloading 1 latest and the previous fragments
             //try{
                 this.download(this.DATASET_URL)
                     .then((res) => { console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"); return res})
@@ -136,16 +135,11 @@ class FragmentStore{
            //     console.log(e);
            // }
            console.log("\x1b[35m","ready for next latest","\x1b[0m");
-        }, 3600000); //3 hour = 10800000 seconds
+        //}, 3000);
 
         //prevent termination of program when not using interval
-        let timer = 3600000;
         setInterval(() => {
-            console.log("...............running:"+Date.now()+"...............getting next fragmant in: "+timer/1000+" s");
-            timer -= 10000;
-            if(timer <= 0){
-                timer = 3600000;
-            }
+            console.log("...............running:"+Date.now()+"...............");
         }, 10000);
     }
 
