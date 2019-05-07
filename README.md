@@ -4,7 +4,7 @@ node script to periodically poll latest and previous chain
 
 Run:
 
-  > node script
+  > node index.js
   
   
   
