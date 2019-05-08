@@ -20,7 +20,7 @@ class FragmentStore{
 
     download(_url){
         console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
-        const caAgent = new https.Agent({ca: rootca});
+        // const caAgent = new https.Agent({ca: rootca});
         return new Promise((resolve,reject) => {
 
             fetch(_url, { timeout: 2000000 })
