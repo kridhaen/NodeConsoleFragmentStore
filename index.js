@@ -9,8 +9,8 @@ const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
 
 //help needed
-let rootca = require('ssl-root-cas/latest').create();
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+//let rootca = require('ssl-root-cas/latest').create();
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 //process.env.NODE_EXTRA_CA_CERTS=[rootca];
 
 class FragmentStore{
