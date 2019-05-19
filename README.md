@@ -1,5 +1,5 @@
 # NodeConsoleFragmentStore
-node script to periodically poll latest and previous chain
+node script to periodically (4 hours) save latest and previous chain
 
 
 Run:
@@ -12,7 +12,4 @@ Only 1 latest and full previous chain:
 
   > node "./script_previous.js"
   
-  
-Start previous chain from specific date, edit script_specific:
-
-  > node script_specific
+ 
