@@ -1,5 +1,5 @@
 # NodeConsoleFragmentStore
-node script to periodically (4 hours) save latest and previous chain
+node script to periodically (4 hours) save latest and previous chain to filesystem in ./latest and ./previous folder
 
 
 Run:
